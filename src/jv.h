@@ -43,8 +43,26 @@ typedef struct {
 } jv;
 
 /*
- * All jv_* functions consume (decref) input and produce (incref) output
- * Except jv_copy
+ * All jv_* functions consume (decref) their jv arguments and produce
+ * (incref) their jv return values, except jv_copy and these accessors,
+ * which leave their argument borrowed:
+ *
+ *   - jv_get_kind (and the jv_is_valid inline), jv_get_refcnt
+ *   - jv_number_value, jv_number_abs, jv_number_negate,
+ *     jv_number_has_literal, jv_number_get_literal
+ *   - jv_string_value
+ *   - jv_object_iter, jv_object_iter_next, jv_object_iter_valid,
+ *     jv_object_iter_key, jv_object_iter_value (the latter two return
+ *     owned copies)
+ *   - jv_show (dumps a copy)
+ *
+ * Pointers returned by jv_string_value and jv_number_get_literal are
+ * borrowed and stay valid only until the jv they came from is freed or
+ * modified.  Conversely, the scalar-result helpers (jv_array_length,
+ * jv_string_length_bytes, jv_string_length_codepoints, jv_string_hash,
+ * jv_object_length, jv_equal, jv_identical, jv_contains, jv_object_get,
+ * jv_object_has, jv_invalid_get_msg, jv_invalid_has_msg, and the
+ * jv_dump* family) do consume their jv arguments.
  */
 
 jv_kind jv_get_kind(jv);
